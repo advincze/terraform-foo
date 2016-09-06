@@ -72,7 +72,17 @@ func main() {
 							log.Println("DELETE", d)
 							return os.Remove(d.State().ID)
 						},
-
+						Exists: func(d *schema.ResourceData, m interface{}) (bool, error) {
+							_, err := os.Stat(d.State().ID)
+							if err != nil {
+								if os.IsNotExist(err) {
+									d.SetId("")
+									return false, nil
+								}
+								return false, err
+							}
+							return true, nil
+						},
 						Schema: map[string]*schema.Schema{
 							"must": &schema.Schema{
 								Type:     schema.TypeString,
